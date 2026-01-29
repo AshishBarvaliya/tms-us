@@ -88,7 +88,6 @@ export const Shipment = new GraphQLObjectType({
   },
 });
 
-// Inputs
 export const AddressInput = new GraphQLInputObjectType({
   name: "AddressInput",
   fields: {
@@ -184,7 +183,6 @@ export const PaginationInput = new GraphQLInputObjectType({
   },
 });
 
-// Connection types
 export const PageInfo = new GraphQLObjectType({
   name: "PageInfo",
   fields: {

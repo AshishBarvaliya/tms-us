@@ -19,6 +19,22 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        navActive:
+          "bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200 dark:hover:bg-emerald-900/40",
+        sidebar:
+          "w-full justify-between rounded-lg px-3 py-2.5 text-left text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+        sidebarItem:
+          "w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+        sidebarItemActive:
+          "w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
+        sidebarLink:
+          "block w-full justify-start rounded-md px-2 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800",
+        sidebarLinkActive:
+          "block w-full justify-start rounded-md px-2 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
+        overlay:
+          "fixed inset-0 z-40 rounded-none border-0 p-0 min-h-0 h-auto w-auto bg-black/50 md:hidden hover:bg-black/50 cursor-default",
+        linkAccent:
+          "p-0 h-auto font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
