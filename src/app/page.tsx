@@ -19,14 +19,14 @@ export default function Home() {
             <Package className="size-10 text-emerald-600 dark:text-emerald-500" />
             <h2 className="mt-4 font-semibold text-zinc-900 dark:text-zinc-50">Shipments</h2>
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-              View and manage all shipments in grid or tile view.
+              View and manage all shipments.
             </p>
             <Button variant="linkAccent" className="mt-4">
               Open Shipments →
             </Button>
           </div>
         </Link>
-        <Link href="/shipments/new">
+        <Link href="/shipments">
           <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-emerald-200 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-800">
             <Truck className="size-10 text-emerald-600 dark:text-emerald-500" />
             <h2 className="mt-4 font-semibold text-zinc-900 dark:text-zinc-50">Create Shipment</h2>

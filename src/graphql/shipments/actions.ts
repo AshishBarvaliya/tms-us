@@ -57,19 +57,17 @@ export async function GetShipmentByIdAction(id: string) {
 }
 
 export async function AddShipmentAction(input: ShipmentCreateInput) {
-  const response = await client.query<AddShipmentData>({
-    query: ADD_SHIPMENT_MUTATION,
+  const response = await client.mutate<AddShipmentData>({
+    mutation: ADD_SHIPMENT_MUTATION,
     variables: { input },
-    fetchPolicy: "network-only",
   });
   return response?.data?.addShipmentMutation;
 }
 
 export async function UpdateShipmentAction(id: string, input: ShipmentUpdateInput) {
-  const response = await client.query<UpdateShipmentData>({
-    query: UPDATE_SHIPMENT_MUTATION,
+  const response = await client.mutate<UpdateShipmentData>({
+    mutation: UPDATE_SHIPMENT_MUTATION,
     variables: { id, input },
-    fetchPolicy: "network-only",
   });
   return response?.data?.updateShipmentMutation;
 }

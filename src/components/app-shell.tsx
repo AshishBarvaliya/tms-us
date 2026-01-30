@@ -2,48 +2,75 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Menu, X, Package, LayoutDashboard, FileText, Settings, ChevronDown, Truck } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Menu, Package, LayoutDashboard, FileText, Settings, ChevronDown, Truck, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useMockAuth } from "@/contexts/mock-auth-context";
+import type { MockRole } from "@/lib/mock-auth";
 
-const horizontalNavItems = [
+const horizontalNavItems: { href: string; label: string; icon: React.ElementType; adminOnly?: boolean }[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/shipments", label: "Shipments", icon: Truck },
   { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Settings", icon: Settings, adminOnly: true },
 ];
 
 const sidebarMenuItems: {
   label: string;
   href?: string;
   icon: React.ElementType;
-  children?: { label: string; href: string }[];
+  adminOnly?: boolean;
+  children?: { label: string; href: string; adminOnly?: boolean }[];
 }[] = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   {
     label: "Shipments",
     icon: Package,
-    children: [
-      { label: "All Shipments", href: "/shipments" },
-      { label: "Create Shipment", href: "/shipments/new" },
-    ],
+    children: [{ label: "All Shipments", href: "/shipments" }],
   },
   {
     label: "Reports",
     icon: FileText,
     children: [
       { label: "Analytics", href: "/reports/analytics" },
-      { label: "Export", href: "/reports/export" },
+      { label: "Export", href: "/reports/export", adminOnly: true },
     ],
   },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Settings", href: "/settings", icon: Settings, adminOnly: true },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { role, setRole, isAdmin } = useMockAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
+
+  const filteredHorizontalNav = useMemo(
+    () => horizontalNavItems.filter((item) => !item.adminOnly || isAdmin),
+    [isAdmin]
+  );
+
+  const filteredSidebarItems = useMemo(
+    () =>
+      sidebarMenuItems
+        .filter((item) => !item.adminOnly || isAdmin)
+        .map((item) =>
+          item.children
+            ? {
+                ...item,
+                children: item.children.filter((c) => !c.adminOnly || isAdmin),
+              }
+            : item
+        ),
+    [isAdmin]
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
@@ -62,7 +89,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="hidden sm:inline">TMS</span>
         </Link>
         <nav className="hidden flex-1 gap-1 md:flex">
-          {horizontalNavItems.map(({ href, label, icon: Icon }) => (
+          {filteredHorizontalNav.map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href}>
               <Button
                 variant={pathname === href ? "navActive" : "ghost"}
@@ -75,6 +102,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-2">
+              <User className="size-4" />
+              <span className="hidden sm:inline">Sign in as</span>
+              <span className="font-medium capitalize">{role}</span>
+              <ChevronDown className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setRole("employee" as MockRole)}>
+              Employee
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setRole("admin" as MockRole)}>
+              Admin
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       <div className="flex flex-1">
@@ -85,7 +130,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
         >
           <div className="flex h-full flex-col gap-1 overflow-y-auto p-3">
-            {sidebarMenuItems.map((item) => (
+            {filteredSidebarItems.map((item) => (
               <div key={item.label}>
                 {item.children ? (
                   <div>

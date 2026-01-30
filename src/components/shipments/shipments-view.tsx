@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Shipment } from "@/graphql/shipments/types";
 import { GetShipmentsAction } from "@/graphql/shipments/actions";
+import { useMockAuth } from "@/contexts/mock-auth-context";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -16,9 +17,11 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { LayoutGrid, LayoutList, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutGrid, LayoutList, Loader2, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { ShipmentTile } from "./shipment-tile";
 import { ShipmentDetailView } from "./shipment-detail-view";
+import { CreateShipmentDialog } from "./create-shipment-dialog";
+import { EditShipmentDialog } from "./edit-shipment-dialog";
 
 function formatDate(s: string | undefined) {
   if (!s) return "—";
@@ -54,6 +57,7 @@ const GRID_COLUMNS = [
 const PAGE_SIZE = 10;
 
 export function ShipmentsView() {
+  const { isAdmin } = useMockAuth();
   const [shipments, setShipments] = useState<Shipment[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +71,20 @@ export function ShipmentsView() {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
   } | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editingShipment, setEditingShipment] = useState<Shipment | null>(null);
+
+  const refetchShipments = () => {
+    GetShipmentsAction(page, PAGE_SIZE, null, null)
+      .then((data) => {
+        const edges = (data as { edges?: { node: Shipment }[] })?.edges ?? [];
+        const nodes = edges.map((e) => e.node);
+        const info = (data as { pageInfo?: typeof pageInfo })?.pageInfo ?? null;
+        setShipments(nodes);
+        setPageInfo(info);
+      })
+      .catch(() => {});
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -121,6 +139,15 @@ export function ShipmentsView() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Shipments</h1>
         <div className="flex items-center gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            className="gap-2"
+            onClick={() => setCreateDialogOpen(true)}
+          >
+            <Plus className="size-4" />
+            Create shipment
+          </Button>
           <span className="text-sm text-zinc-500 dark:text-zinc-400">View:</span>
           <Button
             variant={viewMode === "grid" ? "navActive" : "ghost"}
@@ -208,7 +235,10 @@ export function ShipmentsView() {
                 key={shipment.id}
                 shipment={shipment}
                 onClick={() => setSelectedId(shipment.id)}
-                onEdit={() => {}}
+                onEdit={() => {
+                  if (isAdmin) setEditingShipment(shipment);
+                  else alert("Only admins can edit shipments.");
+                }}
                 onFlag={() => {}}
                 onDelete={() => {}}
               />
@@ -255,11 +285,35 @@ export function ShipmentsView() {
             <ShipmentDetailView
               shipment={selectedShipment}
               onBack={() => setSelectedId(null)}
+              onEdit={() => {
+                if (isAdmin) {
+                  setSelectedId(null);
+                  setEditingShipment(selectedShipment);
+                } else {
+                  alert("Only admins can edit shipments.");
+                }
+              }}
               className="p-6"
             />
           )}
         </DialogContent>
       </Dialog>
+
+      <CreateShipmentDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={refetchShipments}
+      />
+
+      <EditShipmentDialog
+        shipment={editingShipment}
+        open={!!editingShipment}
+        onOpenChange={(open) => !open && setEditingShipment(null)}
+        onSuccess={() => {
+          refetchShipments();
+          setEditingShipment(null);
+        }}
+      />
     </div>
   );
 }

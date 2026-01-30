@@ -3,7 +3,7 @@
 import type { Shipment } from "@/graphql/shipments/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, MapPin, DollarSign, Calendar, Activity } from "lucide-react";
+import { ArrowLeft, MapPin, DollarSign, Calendar, Activity, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function formatDate(s: string | undefined) {
@@ -44,20 +44,30 @@ const statusColors: Record<string, string> = {
 export function ShipmentDetailView({
   shipment,
   onBack,
+  onEdit,
   className,
 }: {
   shipment: Shipment;
   onBack: () => void;
+  onEdit?: () => void;
   className?: string;
 }) {
   const statusClass = statusColors[shipment.status?.toLowerCase() ?? ""] ?? "bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300";
 
   return (
     <div className={cn("mx-auto max-w-3xl space-y-6", className)}>
-      <Button variant="ghost" size="sm" className="gap-2 -ml-2" onClick={onBack}>
-        <ArrowLeft className="size-4" />
-        Back to list
-      </Button>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="ghost" size="sm" className="gap-2 -ml-2" onClick={onBack}>
+          <ArrowLeft className="size-4" />
+          Back to list
+        </Button>
+        {onEdit && (
+          <Button variant="outline" size="sm" className="gap-2" onClick={onEdit}>
+            <Pencil className="size-4" />
+            Edit
+          </Button>
+        )}
+      </div>
 
       <Card className="overflow-hidden border-2 border-zinc-200 dark:border-zinc-700">
         <CardHeader className="border-b border-zinc-200 bg-zinc-50/50 dark:border-zinc-700 dark:bg-zinc-900/50">

@@ -1,4 +1,5 @@
 import { GraphQLNonNull, GraphQLID } from "graphql";
+import type { GraphQLContext } from "@/graphql/context";
 import { Shipment, ShipmentCreateInput, ShipmentUpdateInput } from "./graphqlTypes";
 import { addShipment, updateShipment } from "./services";
 import type {
@@ -11,7 +12,12 @@ export const addShipmentMutation = () => ({
   args: {
     input: { type: new GraphQLNonNull(ShipmentCreateInput) },
   },
-  async resolve(_: unknown, { input }: { input: CreateInput }) {
+  async resolve(
+    _: unknown,
+    { input }: { input: CreateInput },
+    context: GraphQLContext
+  ) {
+    if (!context.user) throw new Error("Unauthenticated");
     return addShipment(input);
   },
 });
@@ -22,7 +28,15 @@ export const updateShipmentMutation = () => ({
     id: { type: new GraphQLNonNull(GraphQLID) },
     input: { type: new GraphQLNonNull(ShipmentUpdateInput) },
   },
-  async resolve(_: unknown, { id, input }: { id: string; input: UpdateInput }) {
+  async resolve(
+    _: unknown,
+    { id, input }: { id: string; input: UpdateInput },
+    context: GraphQLContext
+  ) {
+    if (!context.user) throw new Error("Unauthenticated");
+    if (context.role !== "admin") {
+      throw new Error("Forbidden: only admins can update shipments");
+    }
     return updateShipment(id, input);
   },
 });
