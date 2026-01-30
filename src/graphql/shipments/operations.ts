@@ -102,6 +102,38 @@ export const GET_SHIPMENTS_PAGINATED_QUERY = gql`
           carrierName
           status
           createdAt
+          updatedAt
+          estimatedDelivery
+          pickupLocation {
+            street
+            city
+            state
+            postalCode
+            country
+          }
+          deliveryLocation {
+            street
+            city
+            state
+            postalCode
+            country
+          }
+          trackingData {
+            status
+            lastUpdated
+            events {
+              timestamp
+              status
+              location
+              description
+            }
+          }
+          rates {
+            amount
+            currency
+            tax
+            total
+          }
         }
         cursor
       }

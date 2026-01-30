@@ -38,7 +38,7 @@ export async function GetShipmentsAction(
   sort?: ShipmentSort | null
 ) {
   const pagination: PaginationInput | undefined =
-    page != null || limit != null ? { page: page ?? 1, limit: limit ?? 20 } : undefined;
+    page != null || limit != null ? { page: page ?? 1, limit: limit ?? 10 } : undefined;
   const response = await client.query<ShipmentsPaginatedData>({
     query: GET_SHIPMENTS_PAGINATED_QUERY,
     variables: { filter: filter ?? undefined, sort: sort ?? undefined, pagination },

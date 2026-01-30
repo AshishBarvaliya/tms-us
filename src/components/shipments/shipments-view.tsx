@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Shipment } from "@/graphql/shipments/types";
-import { GetShipmentsListAction } from "@/graphql/shipments/actions";
+import { GetShipmentsAction } from "@/graphql/shipments/actions";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -16,7 +16,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { LayoutGrid, LayoutList, Loader2 } from "lucide-react";
+import { LayoutGrid, LayoutList, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { ShipmentTile } from "./shipment-tile";
 import { ShipmentDetailView } from "./shipment-detail-view";
 
@@ -51,26 +51,41 @@ const GRID_COLUMNS = [
   { key: "createdAt", label: "Created" },
 ] as const;
 
+const PAGE_SIZE = 10;
+
 export function ShipmentsView() {
   const [shipments, setShipments] = useState<Shipment[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "tile">("grid");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageInfo, setPageInfo] = useState<{
+    page: number;
+    limit: number;
+    totalCount: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    GetShipmentsListAction(null, null)
+    GetShipmentsAction(page, PAGE_SIZE, null, null)
       .then((data) => {
         if (cancelled) return;
-        setShipments(Array.isArray(data) ? data : []);
+        const edges = (data as { edges?: { node: Shipment }[] })?.edges ?? [];
+        const nodes = edges.map((e) => e.node);
+        const info = (data as { pageInfo?: typeof pageInfo })?.pageInfo ?? null;
+        setShipments(nodes);
+        setPageInfo(info);
       })
       .catch((err) => {
         if (cancelled) return;
         setError(err?.message ?? "Failed to load shipments");
         setShipments([]);
+        setPageInfo(null);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -78,7 +93,7 @@ export function ShipmentsView() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [page]);
 
   const selectedShipment = selectedId && shipments ? shipments.find((s) => s.id === selectedId) : null;
 
@@ -199,6 +214,34 @@ export function ShipmentsView() {
               />
             ))
           )}
+        </div>
+      )}
+
+      {pageInfo && pageInfo.totalCount > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-4">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Page {pageInfo.page} of {Math.ceil(pageInfo.totalCount / pageInfo.limit)} ({pageInfo.totalCount} total)
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!pageInfo.hasPreviousPage}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <ChevronLeft className="size-4" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!pageInfo.hasNextPage}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
         </div>
       )}
 
